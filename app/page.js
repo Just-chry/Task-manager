@@ -1,103 +1,131 @@
-import Image from "next/image";
+"use client"
+
+import { useState, useEffect } from "react"
+import Header from "../components/Header"
+import TaskForm from "../components/TaskForm"
+import TaskList from "../components/TaskList"
+import TaskFilters from "../components/TaskFilters"
+import Footer from "../components/Footer"
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.js
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [tasks, setTasks] = useState([])
+  const [filter, setFilter] = useState("all")
+  const [sortBy, setSortBy] = useState("date")
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
-  );
+  // Mock data iniziali
+  const mockTasks = [
+    {
+      id: 1,
+      title: "Completare il progetto TaskMate",
+      description: "Sviluppare tutte le funzionalità richieste per la web app",
+      completed: false,
+      createdAt: new Date("2024-01-15"),
+    },
+    {
+      id: 2,
+      title: "Studiare React Hooks",
+      description: "Approfondire useState, useEffect e custom hooks",
+      completed: true,
+      createdAt: new Date("2024-01-10"),
+    },
+    {
+      id: 3,
+      title: "Fare la spesa",
+      description: "Comprare ingredienti per la cena di domani",
+      completed: false,
+      createdAt: new Date("2024-01-20"),
+    },
+  ]
+
+  useEffect(() => {
+    const savedTasks = localStorage.getItem("taskmate-tasks")
+    if (savedTasks) {
+      const parsedTasks = JSON.parse(savedTasks).map((task) => ({
+        ...task,
+        createdAt: new Date(task.createdAt),
+      }))
+      setTasks(parsedTasks)
+    } else {
+      setTasks(mockTasks)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (tasks.length > 0) {
+      localStorage.setItem("taskmate-tasks", JSON.stringify(tasks))
+    }
+  }, [tasks])
+
+  const addTask = (taskData) => {
+    const newTask = {
+      id: Date.now(),
+      ...taskData,
+      completed: false,
+      createdAt: new Date(),
+    }
+    setTasks((prev) => [...prev, newTask])
+  }
+
+  const toggleTask = (id) => {
+    setTasks((prev) => prev.map((task) => (task.id === id ? { ...task, completed: !task.completed } : task)))
+  }
+
+  const deleteTask = (id) => {
+    setTasks((prev) => prev.filter((task) => task.id !== id))
+  }
+
+  const filteredTasks = tasks.filter((task) => {
+    if (filter === "completed") return task.completed
+    if (filter === "pending") return !task.completed
+    return true
+  })
+
+  const sortedTasks = [...filteredTasks].sort((a, b) => {
+    if (sortBy === "alphabetical") {
+      return a.title.localeCompare(b.title)
+    }
+    return b.createdAt - a.createdAt // più recenti prima
+  })
+
+  return (
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <Header />
+
+        <main className="flex-1 container mx-auto px-4 py-8 max-w-4xl">
+          <div className="space-y-8">
+            <section className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">Aggiungi Nuova Attività</h2>
+              <TaskForm onAddTask={addTask} />
+            </section>
+
+            <section className="bg-white rounded-lg shadow-sm p-6">
+              <TaskFilters
+                  filter={filter}
+                  setFilter={setFilter}
+                  sortBy={sortBy}
+                  setSortBy={setSortBy}
+                  tasksCount={{
+                    total: tasks.length,
+                    completed: tasks.filter((t) => t.completed).length,
+                    pending: tasks.filter((t) => !t.completed).length,
+                  }}
+              />
+            </section>
+
+            <section className="bg-white rounded-lg shadow-sm p-6">
+              <h2 className="text-2xl font-bold text-gray-800 mb-6">
+                Le Tue Attività
+                <span className="text-sm font-normal text-gray-500 ml-2">
+                ({sortedTasks.length}{" "}
+                  {filter === "all" ? "totali" : filter === "completed" ? "completate" : "da completare"})
+              </span>
+              </h2>
+              <TaskList tasks={sortedTasks} onToggleTask={toggleTask} onDeleteTask={deleteTask} />
+            </section>
+          </div>
+        </main>
+
+        <Footer />
+      </div>
+  )
 }
